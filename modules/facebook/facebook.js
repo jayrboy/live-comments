@@ -61,14 +61,6 @@ export function getLiveId() {
     .catch((e) => res.status(500).send({ message: e.message }))
 }
 
-export function getWebhook() {
-  let url = `https://localhost:8001/`
-  return axios
-    .get(url)
-    .then((result) => result.data)
-    .catch((e) => console.log({ message: e.message }))
-}
-
 //* Main
 async function main() {
   let result = await getUser()
@@ -77,6 +69,6 @@ async function main() {
 
 //* Use Main and Exception
 try {
-  main()
-  console.log('Node running at main')
+  // main()
+  // console.log('Try Node running at main from facebook')
 } catch (e) {}

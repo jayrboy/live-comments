@@ -28,3 +28,51 @@ URL {
   hash: '#target'
 }
 ```
+
+#### Webhook เพื่อรับ Events จาก Facebook ด้วย Node.js
+
+1. สร้าง Web Sever สำหรับ Webhook
+
+- https://nodejs.org/en
+- https://ngrok.com/download
+
+2. Setup Server
+
+```js
+import express from 'express'
+
+const app = express()
+const port = process.env.PORT || 8000
+
+//TODO: กำหนดค่าอะไรก็ได้ "ต้องเหมือนกัน" กับค่าในช่องตรวจสอบโทเค็นในการสมัครรับข้อมูล
+const webhookSecret = 'my_webhook_secret'
+
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
+
+app.get('/', (req, res) =>
+  res.type('text/html').send(`
+  <h1> JavaScript Runtime Environment. </h1><br>
+  <p><code> ${req.hostname} </code></p>
+  `)
+)
+
+app.get('/', (req, res) => {
+  try {
+    if (
+      req.query['hub.mode'] &&
+      req.query['hub.verify_token'] === webhookSecret
+    ) {
+      res.send(req.query['hub.challenge'])
+    } else {
+      // respond '403 Forbidden' if verify tokens do not match
+      res.sendStatus(403)
+    }
+    res.end()
+  } catch (e) {}
+})
+
+app.listen(port, () =>
+  console.log('Server running at http://localhost:%s', port)
+)
+```

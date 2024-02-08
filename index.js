@@ -1,22 +1,24 @@
 import express from 'express'
-import https from 'https'
-import fs from 'fs'
+import webhooks from './router/webhooks.js'
 
 const app = express()
-const port = 3000
+const port = 8000
 
-const certificate = {
-  key: fs.readFileSync('./config/ssl_private.key', 'utf-8'),
-  cert: fs.readFileSync('./config/ssl.crt', 'utf-8'),
-}
-
-const server = https.createServer(certificate, app)
-
+app.disable('x-powered-by')
 app.use(express.urlencoded({ extended: true }))
-app.use(express.json({ limit: '10mb' }))
+app.use(express.json())
 
-app.get('/', (req, res) => res.send('<a href="/webhooks">GET: Webhooks</a>'))
+app.get('/', (req, res) =>
+  res.send(`
+  <h1>Created an Ngrok Web Server</h1> <br>
+  <p>hostname: <code>${req.hostname}</code> </p>
+  <a href="/webhooks">GET: Webhooks</a>`)
+)
 
-server.listen(port, () =>
-  console.log('Server running at https://localhost:%s', server.address().port)
+app.use('/webhooks', webhooks)
+
+app.use((req, res) => res.sendStatus(404))
+
+app.listen(port, () =>
+  console.log('Express running at http://localhost:%s', port)
 )

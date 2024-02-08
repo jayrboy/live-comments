@@ -1,43 +1,42 @@
 import express from 'express'
-import {
-  getUser,
-  getComment,
-  getWebhook,
-} from '../modules/facebook/facebook.js'
+import crypto from 'crypto'
 
 const router = express.Router()
 
-// กำหนด secret key สำหรับการตรวจสอบ signature
-const webhookSecret = 'your_webhook_secret'
+const VERIFY_TOKEN = 'livecomments001' // กำหนด secret key (ตั้งขึ้นเอง) สำหรับการตรวจสอบให้ Facebook ทดสอบว่าแอปมีอยู่จริง
+let contents = []
 
-router.get('/webhooks', async (req, res) => {
+router.get('/', (req, res) => {
   try {
-    // let result = await getWebhook()
-    // console.log(result) //? check result
-  } catch (e) {}
+    const mode = req.query['hub.mode']
+    const challenge = req.query['hub.challenge']
+    const verifyToken = req.query['hub.verify_token']
+
+    if (mode && verifyToken === VERIFY_TOKEN) {
+      console.log({ message: 'WEBHOOK_VERIFIED_SUCCESSFULLY' })
+      res.status(200).send(challenge)
+    } else {
+      console.log({ message: 'WEBHOOK_TOKENS_DO_NOT_TRY_TO_MATCH' })
+      res.sendStatus(400)
+    }
+  } catch (err) {
+    res.status(500).send({ message: err.message })
+  }
 })
 
-router.post('/webhooks', async (req, res) => {
+router.post('/', (req, res) => {
   try {
-    const signature = req.get('X-Hub-Signature-256')
-    const body = JSON.stringify(req.body)
+    const payload = req.body
 
-    // ตรวจสอบ signature
-    const hash = crypto
-      .createHmac('sha256', webhookSecret)
-      .update(body)
-      .digest('hex')
+    console.log(payload)
 
-    if (signature === `sha256=${hash}`) {
-      // Signature ถูกต้อง, ดำเนินการต่อไป
-      res.status(200).send('Webhook received Successfully.')
-      console.log('Webhook received:', req.body)
-    } else {
-      // Signature ไม่ถูกต้อง, ไม่ดำเนินการต่อ
-      res.status(401)
-      console.log('Invalid signature')
-    }
-  } catch (e) {}
+    contents.unshift(payload)
+
+    res.sendStatus(200)
+  } catch (err) {
+    console.log({ message: err.message })
+    res.status(500)
+  }
 })
 
 export default router
