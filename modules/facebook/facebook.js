@@ -9,7 +9,7 @@ const params = {
 
 export function getUser() {
   // let url = `https://graph.facebook.com/v19.0/me?fields=id,name,email,picture&access_token=${data.accessToken}`
-  let url = `https://graph.facebook.com/v19.0/me?fields=id,name,email,picture`
+  let url = `https://graph.facebook.com/v19.0/me?fields=id,name,email`
   return axios(url, {
     method: 'get',
     params: params,
@@ -19,7 +19,7 @@ export function getUser() {
 }
 
 export function getComment() {
-  let url = `https://graph.facebook.com/v19.0/${data.videoId}/comments?access_token=${data.accessToken}` // { data: [] }
+  let url = `https://graph.facebook.com/v19.0/me/comments?access_token=${data.accessToken}` // { data: [] }
   return axios
     .get(url)
     .then((result) => result.data)
@@ -27,24 +27,26 @@ export function getComment() {
 }
 
 export function getLiveVideo() {
-  let url = `http://graph.facebook.com/v18.0/${data.userId}/live_videos?fields=id,title,status,permalink_url`
+  let url = `http://graph.facebook.com/v19.0/me/live_videos?fields=id,title,status,permalink_url`
+  // let url = `http://graph.facebook.com/v19.0/me/live_videos/?access_token=${data.accessToken}`
+
   return axios
     .get(url)
-    .then((result) => {
-      let liveVideo = json.data.data[0] // /24493349380312689/videos/758082652421417
+    .then((res) => {
+      const liveVideo = res.data.data[0] // /24493349380312689/videos/758082652421417
+      console.log({ status: liveVideo.status, id: liveId })
       // LIVE, LIVE_STOPPED
       if (liveVideo.status === 'LIVE') {
-        const video_url = liveVideo.permalink_url.split('/')
-        // [ '', '24493349380312689', 'videos', '758082652421417' ]
-
+        const video_url = liveVideo.permalink_url.split('/') // [ '', '24493349380312689', 'videos', '758082652421417' ]
         let liveId = video_url.length - 1
-
-        res.status(200).send({ status: liveVideo.status, id: liveId })
+        console.log({ status: liveVideo.status, id: liveId })
       } else {
-        res.status(200).send(liveVideo.status)
+        console.log(liveVideo.status)
       }
     })
-    .catch((e) => res.status(500).send({ message: e.message }))
+    .catch((e) => {
+      console.log({ message: e.message })
+    })
 }
 
 export function getLiveId() {
@@ -63,12 +65,11 @@ export function getLiveId() {
 
 //* Main
 async function main() {
-  let result = await getUser()
+  let result = await getLiveVideo() //TODO:
   console.log(result)
 }
 
 //* Use Main and Exception
 try {
-  // main()
-  // console.log('Try Node running at main from facebook')
+  main()
 } catch (e) {}
