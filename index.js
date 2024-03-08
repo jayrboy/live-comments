@@ -1,8 +1,15 @@
+import https from 'https'
+import fs from 'fs'
 import express from 'express'
+
 import webhooks from './router/webhooks.js'
 
+// import './modules/facebook/facebook.js'
+
 const app = express()
-const port = 8000
+const cfg = {
+  port: process.env.PORT || 443,
+}
 
 app.disable('x-powered-by')
 app.use(express.urlencoded({ extended: true }))
@@ -19,6 +26,14 @@ app.use('/webhooks', webhooks)
 
 app.use((req, res) => res.sendStatus(404))
 
-app.listen(port, () =>
-  console.log('Express running at http://localhost:%s', port)
-)
+https
+  .createServer(
+    {
+      key: fs.readFileSync('./ssl_private.key'),
+      cert: fs.readFileSync('./ssl.crt'),
+    },
+    app
+  )
+  .listen(cfg.port, () =>
+    console.log('Server running at https://localhost:%s', cfg.port)
+  )

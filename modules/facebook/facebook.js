@@ -65,11 +65,14 @@ export function getLiveId() {
 
 //* Main
 async function main() {
-  let result = await getLiveVideo() //TODO:
+  let result = await getComment() //TODO:
   console.log(result)
 }
 
 //* Use Main and Exception
+
 try {
   main()
-} catch (e) {}
+} catch (error) {
+  console.log({ message: error.message })
+}
